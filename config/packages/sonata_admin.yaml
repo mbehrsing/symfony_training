@@ -17,6 +17,11 @@ sonata_admin:
                     - sonata.media.admin.gallery
     options:
         legacy_twig_text_extension: false
+
+    extensions:
+        admin.copy.extension:
+            admins:
+                - admin.article
 #    extensions:
 #        admin.extension.article_workflow:
 #            admins:

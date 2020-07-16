@@ -9,10 +9,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class CopyAdminController extends CRUDController
 {
-    /**
-     * @param $id
-     */
-    public function cloneAction($id, Request $request)
+    public function __invoke($id, Request $request)
     {
         $object = $this->admin->getSubject();
 

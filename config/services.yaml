@@ -52,6 +52,12 @@ services:
         arguments:
             $name: 'Text'
 
+    admin.copy.extension:
+        class: App\Admin\CopyAdminExtension
+        tags:
+            - { name: sonata.admin.extension, target: admin.article }
+            - { name: sonata.admin.extension, target: admin.article.module.table }
+
     admin.article:
         class: App\Admin\ArticleAdmin
         arguments:
