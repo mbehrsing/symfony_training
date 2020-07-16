@@ -4,6 +4,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+    sonata.classification.admin.category.class: 'App\Application\Sonata\ClassificationBundle\Admin\CategoryAdmin'
 
 services:
     # default configuration for services in *this* file
@@ -15,7 +16,7 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/*'
-        exclude: '../src/{DependencyInjection,Entity,Tests,Kernel.php}'
+        exclude: '../src/{DependencyInjection,Entity,Tests,Application,Kernel.php}'
 
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class
@@ -23,5 +24,65 @@ services:
         resource: '../src/Controller'
         tags: ['controller.service_arguments']
 
+    _instanceof:
+        Sonata\BlockBundle\Block\Service\AbstractAdminBlockService:
+            tags: ['sonata.block']
+        Sonata\BlockBundle\Block\Service\AbstractBlockService:
+            tags: ['sonata.block']
+        App\Block\Article\AbstractArticleBlockService:
+            tags: ['app.article_block', 'sonata.block']
+
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+    App\Controller\ArticleBlockAdminController:
+        arguments: [!tagged app.article_block]
+        tags: ['controller.service_arguments']
+
+    App\Block\Article\AbstractArticleBlockService:
+        class: App\Block\Article\AbstractArticleBlockService
+        autoconfigure: false
+        autowire: false
+
+    App\Block\Article\MediaBlockService:
+        arguments:
+            $name: 'Image/Video'
+
+    App\Block\TextBlockService:
+        arguments:
+            $name: 'Text'
+
+    admin.article:
+        class: App\Admin\ArticleAdmin
+        arguments:
+            - ~
+            - App\Entity\Article
+            - App\Controller\ArticleAdminController
+            - '%security.role_hierarchy.roles%'
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: admin, label: Artikel }
+        public: true
+
+    App\Block\ArticleBlockService:
+        arguments: ['@sonata.admin.pool']
+        tags:
+            - { name: sonata.block }
+
+    admin.article_has_block:
+        class: App\Admin\ArticleHasBlockAdmin
+        arguments: [~, App\Entity\ArticleHasBlock, ~]
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: admin, label: ArtikelHasBlock }
+        public: true
+
+
+    admin.article_block:
+        class: App\Admin\ArticleBlockAdmin
+        arguments:
+            - ~
+            - App\Entity\ArticleBlock
+            - App\Controller\ArticleBlockAdminController
+            - '@sonata.block.manager'
+            - [!tagged app.article_block]
+        tags:
+            - { name: sonata.admin, manager_type: orm, group: admin, label: ArticleBlock }

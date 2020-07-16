@@ -1,10 +1,26 @@
 sonata_admin:
     title: 'Sonata Admin'
+    security:
+        handler: sonata.admin.security.handler.role
     dashboard:
         blocks:
             - { type: sonata.admin.block.admin_list, position: left }
+        groups:
+            app.sonata.group.data:
+                label: Struktur
+                icon: '<i class="fa fa-picture-o"></i>'
+                items:
+                    - sonata.page.admin.page
+                    - admin.article
+                    - sonata.media.admin.media
+                    - sonata.classification.admin.category
+                    - sonata.media.admin.gallery
     options:
         legacy_twig_text_extension: false
+#    extensions:
+#        admin.extension.article_workflow:
+#            admins:
+#                - admin.article
 
 sonata_block:
     blocks:

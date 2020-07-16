@@ -1,0 +1,8 @@
+stof_doctrine_extensions:
+    default_locale: "%env(SYMFONY_LOCALE)%"
+
+    orm:
+        default:
+            timestampable: true
+            sluggable:     true
+            blameable: true

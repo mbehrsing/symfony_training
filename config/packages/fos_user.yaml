@@ -1,0 +1,12 @@
+fos_user:
+    db_driver: orm # other valid values are 'mongodb', 'couchdb' and 'propel'
+    firewall_name:  admin
+    user_class:     App\Application\Sonata\UserBundle\Entity\User
+    group:
+        group_class:   Application\Sonata\UserBundle\Entity\Group
+        group_manager: sonata.user.group_manager
+    service:
+        user_manager: sonata.user.user_manager
+    from_email:
+        address:        noreply@example.com
+        sender_name:    CMS

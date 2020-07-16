@@ -1,0 +1,27 @@
+{% extends '@SonataAdmin/CRUD/action.html.twig' %}
+
+{% block content %}
+    <div class="box box-success">
+        <div class="box-header">
+            <h3 class="box-title">
+                Block auswählen
+            </h3>
+        </div>
+        <div class="box-body">
+            {% for type in types %}
+                <div class="col-lg-2 col-md-3 col-sm-4 col-xs-6">
+                    <a href="{{ admin.generateUrl('create', {'type': type.type, 'article' : article}) }}"
+                        class="btn btn-app btn-block"
+                        data-toggle="tooltip"
+                        data-placement="top"
+                    >
+                        {{ type.name }}
+                    </a>
+                </div>
+            {% else %}
+                <span class="alert alert-info">Keine Blöcke</span>
+            {% endfor %}
+            <div class="clearfix"></div>
+        </div>
+    </div>
+{% endblock %}

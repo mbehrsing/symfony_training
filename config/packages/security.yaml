@@ -1,11 +1,27 @@
 security:
     # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    encoders:
+        FOS\UserBundle\Model\UserInterface: sodium
     providers:
         users_in_memory: { memory: null }
+        fos_userbundle:
+            id: fos_user.user_provider.username
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
+        admin:
+            pattern:            /(admin)(.*)
+            form_login:
+                provider:       fos_userbundle
+                login_path:     /admin/login
+                check_path:     /admin/login_check
+                default_target_path: /admin/dashboard
+            logout:
+                path:           /admin/logout
+                target:         /admin/login
+            anonymous: ~
         main:
             anonymous: lazy
             provider: users_in_memory
@@ -16,8 +32,39 @@ security:
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
 
+    role_hierarchy:
+
+        # Zugang zum CMS aber ohne Rechte
+        ROLE_SONATA_ADMIN:      [ ROLE_USER, ROLE_API_USER ]
+
+        ROLE_CUSTOMER_USER_MANAGER:
+            - ROLE_USER
+            - ROLE_SONATA_USER_ADMIN_USER_LIST
+            - ROLE_SONATA_USER_ADMIN_USER_VIEW
+            - ROLE_SONATA_USER_ADMIN_USER_CREATE
+            - ROLE_SONATA_USER_ADMIN_USER_EDIT
+            - ROLE_SONATA_USER_ADMIN_USER_EXPORT
+            - ROLE_SONATA_USER_ADMIN_USER_DELETE
+
+        # für die Technik bzw. System-User, um sich als anderer User ausgeben zu können
+        ROLE_CUSTOMER_ADMIN:
+            - ROLE_CUSTOMER_USER_MANAGER
+            - ROLE_ALLOWED_TO_SWITCH
+            - ROLE_SONATA_ADMIN
+
+        # Manager
+        ROLE_MANAGER: [ROLE_USER]
+
+        # höchste Rolle
+        ROLE_SUPER_ADMIN:           [ ROLE_CUSTOMER_ADMIN, ROLE_MANAGER]
+
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        # Admin login page needs to be access without credential
+        - { path: ^/admin/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/admin/logout$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/admin/login_check$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/admin/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
+
+        - { path: ^/admin/, role: [ROLE_SONATA_ADMIN] }
