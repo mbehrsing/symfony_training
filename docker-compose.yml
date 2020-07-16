@@ -1,0 +1,98 @@
+version: "3.6"
+
+volumes:
+  xoz-one:
+
+services:
+  php-cli:
+    image: exozet/php-fpm:7.4.0-sudo-alpine
+    user: "${UID-www-data}:${GID-www-data}"
+    entrypoint: bash
+    hostname: php-cli
+    volumes:
+      - ./:/usr/src/app:cached
+      - ./.docker/cache/composer:/composer/cache/
+      - ./.docker/data/www-data:/home/www-data/
+      - ./.docker/user/.bashrc:/home/www-data/.bashrc
+      - ./.docker/empty.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    env_file:
+      - ./.docker/common.env
+      - ./.env
+    depends_on:
+      - nginx
+      - mysql
+      - redis
+
+  php-fpm:
+    image: exozet/php-fpm:7.4.0-sudo-alpine
+    depends_on:
+      - mysql
+      - redis
+    env_file:
+      - ./.docker/common.env
+      - ./.env
+    volumes:
+      - ./:/usr/src/app:cached
+      - ./.docker/empty.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    ports:
+      - "9000"
+
+  ngrok:
+    image:  wernight/ngrok
+    command: ngrok http nginx:80
+    depends_on:
+      - nginx
+    ports:
+      - "4040"
+  nginx:
+    image: nginx:1.17-alpine
+    depends_on:
+      - php-fpm
+      - xoz-one-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./:/usr/src/app:cached
+      - ./.docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
+      - type: volume
+        source: xoz-one
+        target: /etc/xoz-one
+    networks:
+      default:
+        aliases:
+          - app.xoz.one
+
+  mysql-cli:
+    image: mysql:8
+    env_file:
+      - ./.docker/common.env
+      - ./.env
+    entrypoint: mysql -hmysql -proot -uroot db-name
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:5.6
+    env_file:
+      - ./.docker/common.env
+      - ./.env
+    volumes:
+      - ./.docker/data/mysql:/var/lib/mysql
+      - ./.docker/mysql/mysql.cnf:/etc/mysql/conf.d/docker.cnf
+      - ./.docker/data/mysql/dumps:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    volumes:
+      - .docker/data/redis:/data
+    ports:
+      - "6379:6379"
+
+  xoz-one-nginx:
+    build: .docker/build/xoz-one
+    volumes:
+      - "xoz-one:/etc/xoz-one"
