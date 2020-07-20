@@ -65,9 +65,8 @@ final class ArticleAdmin extends AbstractAdmin
         $listMapper
             ->add('id')
             ->addIdentifier('title')
+            ->add('headerPicture')
             ->add('accessRoles', 'choice', ['choices' => $this->getRoles(), 'multiple' => true])
-            ->add('liveDate')
-            ->add('killDate')
             ->add('status', 'choice', ['choices' => Article::ALL_STATUS])
             ->add('category', null, [])
             ->add('page')
@@ -76,9 +75,9 @@ final class ArticleAdmin extends AbstractAdmin
                     'show' => [],
                     'edit' => [],
                     'delete' => [],
-                    'clone' => [
-                        'template' => 'Admin/clone_action.html.twig',
-                    ],
+//                    'clone' => [
+//                        'template' => 'Admin/clone_action.html.twig',
+//                    ],
                 ],
             ]);
     }
@@ -86,7 +85,8 @@ final class ArticleAdmin extends AbstractAdmin
     protected function configureFormFields(FormMapper $formMapper): void
     {
         $formMapper
-            ->with('Allgemein', ['class' => 'col-md-6'])
+            ->tab('test')
+            ->with('General', ['class' => 'col-md-6'])
                 ->add('title')
                 ->add('slug', null, ['disabled' => true])
                 ->add('headerPicture', ModelListType::class);
@@ -150,21 +150,25 @@ final class ArticleAdmin extends AbstractAdmin
                     ]
                 )
             ->end()
+
+            ->end()
+            ->tab('Blocks')
             ->with('Module')
-                ->add(
-                    'articleHasBlocks',
-                    \Sonata\Form\Type\CollectionType::class,
-                    [],
-                    [
-                        'link_parameters' => [
-                            'article' => $this->getSubject() ? $this->getSubject()->getId() : null,
-                        ],
-                        'sortable' => 'position',
-                        'edit' => 'inline',
-                        'inline' => 'table',
-                        'admin_code' => 'admin.article_has_block',
-                    ]
-                )
+            ->add(
+                'articleHasBlocks',
+                \Sonata\Form\Type\CollectionType::class,
+                [],
+                [
+                    'link_parameters' => [
+                        'article' => $this->getSubject() ? $this->getSubject()->getId() : null,
+                    ],
+                    'sortable' => 'position',
+                    'edit' => 'inline',
+                    'inline' => 'table',
+                    'admin_code' => 'admin.article_has_block',
+                ]
+            )
+            ->end()
             ->end()
         ;
     }
@@ -182,14 +186,7 @@ final class ArticleAdmin extends AbstractAdmin
 
     private function getRoles()
     {
-        $filteredRoles = [];
-        foreach ($this->roles as $role => $inheritedRoles) {
-            if (stripos($role, 'ROLE_USER_CONTROL') === 0) {
-                $filteredRoles[$role] = $role;
-            }
-        }
-
-        return $filteredRoles;
+        return ['ROLES_SUPER_ADMIN' => 'ROLES_SUPER_ADMIN', 'ROLE_USER' => 'ROLE_USER'];
     }
 
     public function preUpdate($object)

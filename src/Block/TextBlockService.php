@@ -10,6 +10,7 @@ use Sonata\BlockBundle\Model\BlockInterface;
 use Sonata\Form\Type\ImmutableArrayType;
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -48,7 +49,7 @@ class TextBlockService extends AbstractAdminBlockService
     {
         $formMapper->add('settings', ImmutableArrayType::class, array(
             'keys' => array(
-                array('content', CKEditorType::class, array()),
+                array('content', TextareaType::class, array()),
             ),
         ));
     }
